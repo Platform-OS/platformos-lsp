@@ -71,6 +71,10 @@ module PlatformosCheck
       end
     end
 
+    def optional_arguments
+      @optional_arguments ||= defined_arguments - required_arguments
+    end
+
     def defined_arguments
       @defined_arguments ||= variables.map(&:name)
     end

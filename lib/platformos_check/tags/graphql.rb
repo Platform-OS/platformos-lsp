@@ -5,6 +5,7 @@ module PlatformosCheck
     class Graphql < Base
       QUERY_NAME_SYNTAX = /(#{Liquid::VariableSignature}+)\s*=\s*(.*)\s*/om
       INLINE_SYNTAX = /(#{Liquid::QuotedFragment}+)(\s*(#{Liquid::QuotedFragment}+))?/o
+      INLINE_SYNTAX_WITHOUT_RESULT_VARIABLE = /\A([\w\-\.\[\]])+\s*:\s*/om
       CLOSE_TAG_SYNTAX = /\A(.*)(?-mix:\{%-?)\s*(\w+)\s*(.*)?(?-mix:%\})\z/m # based on Liquid::Raw::FullTokenPossiblyInvalid
 
       attr_reader :to, :from, :inline_query, :value_expr, :partial_name, :attributes_expr, :attributes
@@ -28,6 +29,8 @@ module PlatformosCheck
           @partial_name = value_expr
           @from = Liquid::Variable.new(after_assign_markup.join('|'), options)
         elsif INLINE_SYNTAX.match?(markup)
+          raise Liquid::SyntaxError, 'Invalid syntax for inline graphql tag - missing result name. Valid syntax: graphql result, arg1: var1, ...' if markup.match?(INLINE_SYNTAX_WITHOUT_RESULT_VARIABLE)
+
           @inline_query = true
           parse_markup(tag_name, markup)
           @attributes = attributes_expr.keys

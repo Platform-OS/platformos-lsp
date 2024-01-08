@@ -17,6 +17,23 @@ class InvalidArgsTest < Minitest::Test
     END
   end
 
+  def test_fixes_duplicate_argument_in_render
+    sources = {
+      "app/views/pages/index.liquid" => <<~END
+        {% render "my-partial", var: "hello", another: 6, another: 4 %}
+      END
+    }
+    expected_sources = {
+      "app/views/pages/index.liquid" => <<~END
+        {% render "my-partial", var: "hello", another: 4 %}
+      END
+    }
+
+    fix_platformos_app(PlatformosCheck::InvalidArgs.new, sources).each do |path, source|
+      assert_equal(expected_sources[path], source)
+    end
+  end
+
   def test_report_all_duplicated_argument_in_function
     offenses = analyze_platformos_app(
       PlatformosCheck::InvalidArgs.new,

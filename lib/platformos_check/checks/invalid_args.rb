@@ -42,7 +42,10 @@ module PlatformosCheck
 
     def add_duplicated_key_offense(node)
       node.value.duplicated_attrs.each do |duplicated_arg|
-        add_offense("Duplicated argument `#{duplicated_arg}`", node:)
+        add_offense("Duplicated argument `#{duplicated_arg}`", node:) do |corrector|
+          match = node.markup.match(/(?<attribute>,?\s*#{duplicated_arg}\s*:\s*#{Liquid::QuotedFragment})\s*/)
+          corrector.replace(node, node.markup.sub(match[:attribute], ''), node.start_index...node.end_index)
+        end
       end
     end
   end

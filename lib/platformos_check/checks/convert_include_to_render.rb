@@ -8,10 +8,10 @@ module PlatformosCheck
     doc docs_url(__FILE__)
 
     def on_include(node)
-      add_offense("`include` is deprecated - convert it to `render`", node:) do |corrector|
-        # We need to fix #445 and pass the variables from the context or don't replace at all.
-        # corrector.replace(node, "render \'#{node.value.template_name_expr}\' ")
-      end
+      add_offense("`include` is deprecated - convert it to `render`", node:) # do |corrector|
+      # We need to fix #445 and pass the variables from the context or don't replace at all.
+      # corrector.replace(node, "render \'#{node.value.template_name_expr}\' ")
+      # end
     end
   end
 end

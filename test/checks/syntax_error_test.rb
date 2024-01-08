@@ -67,4 +67,36 @@ class SyntaxErrorTest < Minitest::Test
       Syntax Error in 'parse_json' - Valid syntax: parse_json [var] at app/views/pages/index.liquid:1
     END
   end
+
+  def test_invalid_inline_graphql_tag
+    offenses = analyze_platformos_app_without_raise(
+      PlatformosCheck::SyntaxError.new,
+      "app/views/pages/index.liquid" => <<~END
+        {% graphql name: name, category_id: category.id, lang: lang %}
+          mutation create_category_detail(
+            $category_id: String!
+            $name: String!
+            $lang: String!
+          ) {
+            record_create(
+              record: {
+                table: "category_detail"
+                properties: [
+                  { name: "category_id", value: $category_id }
+                  { name: "name", value: $name }
+                  { name: "lang", value: $lang }
+                ]
+              }
+            ) {
+              id
+            }
+          }
+        {% endgraphql %}
+      END
+    )
+
+    assert_offenses(<<~END, offenses)
+      Invalid syntax for inline graphql tag - missing result name. Valid syntax: graphql result, arg1: var1, ... at app/views/pages/index.liquid:1
+    END
+  end
 end
